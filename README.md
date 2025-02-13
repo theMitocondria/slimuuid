@@ -1,6 +1,6 @@
-# Uniquely Identifier
+# SlimUUID ✨
 
-Uniquely Identifier is a custom UUID generator that uses a **Base-62** character set (`0-9`, `a-z`, `A-Z`) and a time-based scheme for enhanced uniqueness and predictable sorting. It produces a compact ID that includes time components, an optional machine ID, and a **murmur3** hash.
+SlimUUID is a custom UUID generator that uses a **Base-62** character set (`0-9`, `a-z`, `A-Z`) and a time-based scheme for enhanced uniqueness and predictable sorting. It produces a compact ID that includes time components, an optional machine ID, and a **murmur3** hash.
 
 ## Table of Contents
 
@@ -10,7 +10,7 @@ Uniquely Identifier is a custom UUID generator that uses a **Base-62** character
 4. [Installation](#installation)  
 5. [Usage](#usage)  
 6. [Examples](#examples)  
-7. [Contributing](#contributing)  
+7. [Contributing](#contributing)
 8. [License](#license)
 
 ## Project Overview
@@ -61,13 +61,13 @@ This project creates smaller, more readable, and highly unique identifiers, simi
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-account/Uniquely-Identifier.git 
+   git clone https://github.com/theMitocondria/slimuuid
    ```
 # Project Setup and Usage
 
 2. **Navigate into the project folder**:
 ```bash
-cd Uniquely-Identifier
+cd slimuuid
 ```
 
 3. **Install dependencies**:
@@ -131,4 +131,8 @@ Contributions, issues, and feature requests are welcome!
    ```
 5. Open a Pull Request.
 
+## License
+Distributed under the MIT License. See LICENSE for more information.
 
+
+**Feel free to modify any sections to fit your project’s needs! If you have any questions or run into issues, open an issue or pull request on GitHub. Happy coding! 😊**
