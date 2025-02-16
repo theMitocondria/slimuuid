@@ -5,7 +5,9 @@ import (
     "github.com/spaolacci/murmur3"
     "time"
 )
-
+var counter int = 0
+var characters = "abABcdCD01efEFghGH23-ijIJklKL45mnMNopOP67qrQRstS_T89uvUVwxWXyzYZ"
+	
 func hashGenerator(uuid string) string {
    
     hash1, hash2 := murmur3.Sum128([]byte(uuid))
@@ -40,8 +42,18 @@ func Generate() string {
 
 func GenerateFast(unique string) string {
     timePart := TimePartFast()
-	hashedPart :=  hashGeneratorFast(unique +timePart)
+	hashedPart :=  hashGeneratorFast(unique+timePart)
 	return timePart + hashedPart 
 }
+
+func GenerateBest(unique string)string {
+    timePart := TimePartFast()
+	hashedPart :=  hashGeneratorFast(unique+string(characters[counter])+timePart)
+    if counter >= 64 {
+        counter = 0
+    }
+	return timePart + hashedPart 
+}
+
 
 //kis machine ne ise call kia ( ye to hum default add kr skte h hr bnde ka jo ki hogi hr bnde ki seed alg hogi) + () 

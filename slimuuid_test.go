@@ -4,14 +4,22 @@ import (
 	"testing"
 )
 
-func BenchmarkSlimUUID(b *testing.B) {
+func BenchmarkSlim(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_ = Generate()
 	}
 }
 
-func BenchmarkSlimUUIDFast(b *testing.B) {
+func BenchmarkSlimFast(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = GenerateFast("mitocondria")  
+		_ = GenerateFast("c4:75:ab:cf:66:bf")  
 	}
 }
+
+func BenchmarkSlimBest(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = GenerateBest("c4:75:ab:cf:66:bf")  
+	}
+}
+
+
