@@ -6,13 +6,36 @@ import (
 
 /*
   this function generates a mac address of the machine in string format
-  always call the function like => 
-  macId, err := MacID()
-  if err != nil {
-    return "" , err
-  }
-  fmt.Println(macId)
-  This function is not supported on windows machines
+  always call the function like this so you can get it in string format  => 
+  ```
+	package main
+	import (
+		"encoding/hex"
+		"fmt"
+		"strings"
+		"github.com/theMitocondria/slimuuid"
+	)
+	
+	func formatMAC(macRaw string) string {
+		// Convert the string to bytes, then get a hex string.
+		hexStr := hex.EncodeToString([]byte(macRaw))
+		// Insert ":" every 2 characters.
+		var parts []string
+		for i := 0; i < len(hexStr); i += 2 {
+			parts = append(parts, hexStr[i:i+2])
+		}
+		return strings.Join(parts, ":")
+	}
+	
+	func main() {
+		macRaw, err := slimuuid.MacID()
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println( formatMAC(macRaw))
+	}
+  ```
+  This function is not supported on windows machines 
 */
 func MacID()  ( string , error ) {
     interfaces, err := net.Interfaces()

@@ -1,15 +1,13 @@
 package slimuuid
 
 import (
-	"testing"
-	"github.com/google/uuid"
-	"github.com/matoous/go-nanoid/v2"
-	
+	"testing"	
 )
 
 const testMacID = "c4:75:ab:cf:66:bf"
 const testDate = "2025-02-01"
 const testSeed = uint32(12345)
+const testCharacters = "0123456789abcdefghijklmnopqrstuvwxyz_-ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // Benchmarks
 func BenchmarkGenerate(b *testing.B) {
@@ -60,17 +58,67 @@ func BenchmarkGenerateBestWithDateAndSeed(b *testing.B) {
 	}
 }
 
-func BenchmarkUUID(b *testing.B) {
+
+func BenchmarkGenerateWithCharacters(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = uuid.New()
+		_, _ = GenerateWithCharacters(testCharacters)
 	}
 }
 
-func BenchmarkNanoID(b *testing.B) {
+func BenchmarkGenerateWithCharactersAndSeed(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_, _ = gonanoid.New(21)
+		_, _ = GenerateWithCharactersAndSeed(testCharacters, testSeed)
 	}
 }
+
+func BenchmarkGenerateWithCharactersAndDate(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, _ = GenerateWithCharactersAndDate(testCharacters, testDate)
+	}
+}
+
+func BenchmarkGenerateWithCharactersAndDateAndSeed(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, _ = GenerateWithCharactersAndDateAndSeed(testCharacters, testDate, testSeed)
+	}
+}
+
+func BenchmarkGenerateBestWithCharacters(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, _ = GenerateBestWithCharacters(testMacID, testCharacters)
+	}
+}
+
+func BenchmarkGenerateBestWithCharactersAndSeed(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, _ = GenerateBestWithCharactersAndSeed(testMacID, testCharacters, testSeed)
+	}
+}
+
+func BenchmarkGenerateBestWithCharactersAndDate(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, _ = GenerateBestWithCharactersAndDate(testMacID, testCharacters, testDate)
+	}
+}
+
+func BenchmarkGenerateBestWithCharactersAndDateAndSeed(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, _ = GenerateBestWithCharactersAndDateAndSeed(testMacID, testCharacters, testDate, testSeed)
+	}
+}	
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
