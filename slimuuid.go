@@ -1,59 +1,339 @@
 package slimuuid
+
 import (
-	"encoding/binary"
-    "encoding/hex"
-    "github.com/spaolacci/murmur3"
+	"errors"
+	"strconv"
     "time"
 )
-var counter int = 0
-var characters = "abABcdCD01efEFghGH23-ijIJklKL45mnMNopOP67qrQRstS_T89uvUVwxWXyzYZ"
-	
-func hashGenerator(uuid string) string {
-   
-    hash1, hash2 := murmur3.Sum128([]byte(uuid))
-    
-    var fullHash [16]byte // stack-allocated for efficiency
-    binary.BigEndian.PutUint64(fullHash[:8], hash1)
-    binary.BigEndian.PutUint64(fullHash[8:], hash2)
-    
-    truncated := hex.EncodeToString(fullHash[:6])
-    return truncated 
-}
 
-func hashGeneratorFast(tt string) string {
-    hash1 := murmur3.Sum32WithSeed([]byte(tt),uint32(time.Now().UnixNano()))
-    var fullHash [4]byte // stack-allocated for efficiency
-    binary.BigEndian.PutUint32(fullHash[0:], hash1)
-    truncated := hex.EncodeToString(fullHash[0:])
-    return truncated 
-}
-func Generate() string {
+var counter int = 0
+
+/* Generates a  slimuuid of 8(time chars)+ 12 (hash chars)  with non existent collison probability , so if you are using
+this with more than 100 ids per nano second this is the recommended function to use . 
+*/
+func Generate()  ( string , error ) {
+    // generate a unique id using NewRandom function from /google/uuid package 
 	uuid , err := ID()
     if err != nil {
-        return "" 
+        return "" , err 
     }
 
-    timePart := TimePart()
-	hashedPart :=  hashGenerator(uuid)
+    // takes a time response clock synced upto millisecons encoded in 64 base character encoding
+    timePart := MilliTime()
+
+    // takes a hash of the uuid encoded in 64 base character encoding using murmur3 hash function
+	hashedPart :=  DoubleHashGenerator(uuid)
+
+    // combines the time part and the hashed part to form a slimuuid
 	slimId := timePart + hashedPart 
 
-	return slimId
+	return slimId , nil
 }
 
-func GenerateFast(unique string) string {
-    timePart := TimePartFast()
-	hashedPart :=  hashGeneratorFast(unique+timePart)
-	return timePart + hashedPart 
+// same as Generate function but with a seed , so you need to provide a seed to the function that is a uint32
+func GenerateWithSeed(seed uint32) (string, error) {
+    // check if seed is valid
+    if seed < 0 {
+        return "" , errors.New("seed is not valid")
+    }
+
+    //check if seed is 0
+    if seed == 0 {
+        seed = uint32(time.Now().UnixNano())
+    }
+
+    // generate a unique id using NewRandom function from /google/uuid package 
+	uuid , err := ID()
+    if err != nil {
+        return "" , err 
+    }
+
+    
+
+    // takes a time response clock synced upto millisecons encoded in 64 base character encoding
+    timePart := MilliTime()
+
+    // takes a hash of the uuid encoded in 64 base character encoding using murmur3 hash function
+	hashedPart :=  DoubleHashGeneratorWithSeed(uuid , seed)
+
+    // combines the time part and the hashed part to form a slimuuid
+	slimId := timePart + hashedPart 
+
+	return slimId , nil
 }
 
+/* 
+    this function uses same algoritthm as Generate but uses a date of your choice from which milliseconds will
+    be counted so you can send date in string format and it will generate a slimuuid based on that date , default 
+    date in Generate function is 1 feb 2025 when slimuuid was first released.
+    always call the function like => 
+    date := "2025-02-01" / "2025/02/01"
+    slimId := GenerateWithDate(date)
+    fmt.Println(slimId)
+    Always pass the date in string format and not a time.Time format 
+*/
+func GenerateWithDate(date string) (string, error) {
+    // take out year , month , day from string
+    year := date[:4]
+    month := date[5:7]
+    day := date[8:10]
+
+    // convert year , month , day to int
+    yearInt, err := strconv.Atoi(year)
+    monthInt, err := strconv.Atoi(month)
+    dayInt, err := strconv.Atoi(day)
+    if err != nil {
+        return "" , err
+    }
+    
+    uuid , err := ID()
+    if err != nil {
+        return "" , err 
+    }
+
+    // takes a time response clock synced upto milliseconds encoded in 64 base character encoding
+    timePart := MilliTimeWithDate(yearInt, monthInt, dayInt)
+
+    // takes a hash of the uuid encoded in 64 base character encoding using murmur3 hash function
+	hashedPart :=  DoubleHashGenerator(uuid)
+
+    // combines the time part and the hashed part to form a slimuuid
+	slimId := timePart + hashedPart 
+
+	return slimId , nil
+}
+
+/*
+    same as GenerateWithDate function but with a seed , so you need to provide a seed to the function that is a uint32
+    always call the function like => 
+    date := "2025-02-01"
+    seed := uint32(time.Now().UnixNano()) or any integer you want to use as a seed greater than 0
+    slimId := GenerateWithDateAndSeed(date, seed)
+    fmt.Println(slimId)
+    Always pass the date in string format and not a time.Time format  
+*/
+func GenerateWithDateAndSeed(date string, seed uint32) (string, error) {
+    // take out year , month , day from string
+    year := date[:4]
+    month := date[5:7]
+    day := date[8:10]
+
+    // convert year , month , day to int
+    yearInt, err := strconv.Atoi(year)
+    monthInt, err := strconv.Atoi(month)
+    dayInt, err := strconv.Atoi(day)
+    if err != nil {
+        return "" , err
+    }
+
+    // check if seed is valid
+    if seed < 0 {
+        return "" , errors.New("seed is not valid")
+    }
+
+    //check if seed is 0
+    if seed == 0 {
+        seed = uint32(time.Now().UnixNano())
+    }
+
+    uuid , err := ID()
+    if err != nil {
+        return "" , err 
+    }
+
+    // takes a time response clock synced upto milliseconds encoded in 64 base character encoding
+    timePart := MilliTimeWithDate(yearInt, monthInt, dayInt)
+
+    // takes a hash of the uuid encoded in 64 base character encoding using murmur3 hash function
+	hashedPart :=  DoubleHashGeneratorWithSeed(uuid , seed)
+
+    // combines the time part and the hashed part to form a slimuuid
+	slimId := timePart + hashedPart 
+
+    return slimId , nil
+}
+
+/* this is the best function to generate a slimuuid , it is the best because it is the most efficient and have least 
+  characters that are 18 => 10 (time chars) + 8 (hash chars) . It takes a unique string and a counter that is used to 
+  generate a unique id for each system , we recommend you use MAC address of the system as a unique string. which you
+  can get using MacID function from unique.go file which is in the same package. 
+  We could have integrated generating it ourself but it would make a significant downgrade in performance , so u just 
+  generate in once then you are good to go. 
+  always call the function like => 
+  MacID , err := MacID()
+  if err != nil {
+    return "" , err
+  }
+  and store your MAC ID in a variable and pass it to the function like => 
+  unique := "your_mac_id"
+  slimId := GenerateBest(unique)
+  and then you can use it like => 
+  fmt.Println(slimId)
+*/
 func GenerateBest(unique string)string {
-    timePart := TimePartFast()
-	hashedPart :=  hashGeneratorFast(unique+string(characters[counter])+timePart)
+    // takes a time response clock synced upto nanoseconds encoded in 64 base character encoding
+    timePart := NanoTime()
+
+    /*
+     takes a hash of the unique string provided by you + counter of thread in a Nanosecond 
+     so almost non existent collision probability + time part encoded in 64 base character encoding 
+     using murmur3 hash function
+    */
+	hashedPart :=  SingleHashGenerator(unique+string(characters[counter])+timePart)
+
+    // if counter is greater than 64 then reset it to 0
     if counter >= 64 {
         counter = 0
     }
+
+    // increment the counter
 	return timePart + hashedPart 
 }
 
+/*
+  same as GenerateBest function but with a seed , so you need to provide a seed to the function that is a uint32
+  always call the function like => 
+  MacID , err := MacID()
+  if err != nil {
+    return "" , err
+  }
+  and store your MAC ID in a variable and pass it to the function like => 
+  unique := "your_mac_id"
+  seed := uint32(time.Now().UnixNano()) or any integer you want to use as a seed greater than 0
+  slimId, err := GenerateBestWithSeed(unique, seed)
+  if err != nil {
+    return "" , err
+  }
+  fmt.Println(slimId)
+  Always pass the seed as a uint32 and not a int32 and do remember seed creates a better hash but is 10-15ns slower
+*/
+func GenerateBestWithSeed(unique string, seed uint32) (string, error) {
+    // check if seed is valid
+    if seed < 0 {
+        return "" , errors.New("seed is not valid")
+    }
 
-//kis machine ne ise call kia ( ye to hum default add kr skte h hr bnde ka jo ki hogi hr bnde ki seed alg hogi) + () 
+    //check if seed is 0
+    if seed == 0 {
+        seed = uint32(time.Now().UnixNano())
+    }
+    
+    // takes a time response clock synced upto nanoseconds encoded in 64 base character encoding
+    timePart := NanoTime()
+
+    /*
+     takes a hash of the unique string provided by you + counter of thread in a Nanosecond 
+     so almost non existent collision probability + time part encoded in 64 base character encoding 
+     using murmur3 hash function
+    */
+	hashedPart :=  SingleHashGeneratorWithSeed(unique+string(characters[counter])+timePart, seed)
+
+    // if counter is greater than 64 then reset it to 0
+    if counter >= 64 {
+        counter = 0
+    }
+
+    // increment the counter
+	return timePart + hashedPart , nil
+}
+
+/*
+  same as GenerateBest function but with a date of your choice , so you need to provide a date to the function that is a string
+  always call the function like => 
+  date := "2025-02-01"
+  unique := "your_mac_id"
+  slimId, err := GenerateBestWithDate(unique, date)
+  if err != nil {
+    return "" , err
+  }
+  fmt.Println(slimId)
+  Always pass the date in string format and not a time.Time format  
+*/
+func GenerateBestWithDate(unique string, date string) (string, error) {
+    // take out year , month , day from string
+    year := date[:4]
+    month := date[5:7]
+    day := date[8:10]
+    
+    // convert year , month , day to int
+    yearInt, err := strconv.Atoi(year)
+    monthInt, err := strconv.Atoi(month)
+    dayInt, err := strconv.Atoi(day)
+    if err != nil {
+        return "" , err
+    }
+
+    // takes a time response clock synced upto nanoseconds encoded in 64 base character encoding from date given by you
+    timePart := NanoTimeWithDate(yearInt, monthInt, dayInt)
+
+    /*
+     takes a hash of the unique string provided by you + counter of thread in a Nanosecond 
+     so almost non existent collision probability + time part encoded in 64 base character encoding 
+     using murmur3 hash function
+    */
+	hashedPart :=  SingleHashGenerator(unique+string(characters[counter])+timePart)
+
+    // if counter is greater than 64 then reset it to 0
+    if counter >= 64 {
+        counter = 0
+    }
+
+    // increment the counter
+	return timePart + hashedPart , nil
+}
+
+/*
+  same as GenerateBestWithDate function but with a seed , so you need to provide a seed to the function that is a uint32
+  always call the function like => 
+  date := "2025-02-01"
+  unique := "your_mac_id"
+  seed := uint32(time.Now().UnixNano()) or any integer you want to use as a seed greater than 0
+  slimId, err := GenerateBestWithDateAndSeed(unique, date, seed)
+  if err != nil {
+    return "" , err
+  }
+  fmt.Println(slimId)
+  Always pass the date in string format and not a time.Time format  
+*/
+func GenerateBestWithDateAndSeed(unique string, date string, seed uint32) (string, error) {    
+    // take out year , month , day from string
+    year := date[:4]
+    month := date[5:7]
+    day := date[8:10]
+    
+    // convert year , month , day to int
+    yearInt, err := strconv.Atoi(year)
+    monthInt, err := strconv.Atoi(month)
+    dayInt, err := strconv.Atoi(day)
+    if err != nil {
+        return "" , err
+    }   
+
+    // check if seed is valid
+    if seed < 0 {
+        return "" , errors.New("seed is not valid")
+    }
+    
+    // check if seed is 0
+    if seed == 0 {
+        seed = uint32(time.Now().UnixNano())
+    }
+
+    // takes a time response clock synced upto nanoseconds encoded in 64 base character encoding from date given by you
+    timePart := NanoTimeWithDate(yearInt, monthInt, dayInt)
+
+    /*
+     takes a hash of the unique string provided by you + counter of thread in a Nanosecond 
+     so almost non existent collision probability + time part encoded in 64 base character encoding 
+     using murmur3 hash function
+    */
+    hashedPart :=  SingleHashGeneratorWithSeed(unique+string(characters[counter])+timePart, seed)
+
+    // if counter is greater than 64 then reset it to 0
+    if counter >= 64 {
+        counter = 0
+    }
+
+    // increment the counter
+    return timePart + hashedPart , nil
+}
