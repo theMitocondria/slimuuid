@@ -53,10 +53,10 @@ func DoubleHashGeneratorWithSeed(uuid string, seed uint32) string {
     different algos , additional strings to avoid collision .
 */
 func SingleHashGenerator(tt string) string {
-    hash1 := murmur3.Sum32([]byte(tt))
-    var fullHash [4]byte // stack-allocated for efficiency
-    binary.BigEndian.PutUint32(fullHash[0:], hash1)
-    truncated := hex.EncodeToString(fullHash[0:])
+    hash1 := murmur3.Sum64([]byte(tt))  // 64-bit instead of 32-bit
+    var fullHash [8]byte // stack-allocated for efficiency
+    binary.BigEndian.PutUint64(fullHash[:8], hash1)
+    truncated := hex.EncodeToString(fullHash[:6])
     return truncated 
 }
 
