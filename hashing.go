@@ -56,7 +56,7 @@ func SingleHashGenerator(tt string) string {
     hash1 := murmur3.Sum64([]byte(tt))  // 64-bit instead of 32-bit
     var fullHash [8]byte // stack-allocated for efficiency
     binary.BigEndian.PutUint64(fullHash[:8], hash1)
-    truncated := hex.EncodeToString(fullHash[:6])
+    truncated := hex.EncodeToString(fullHash[:4])
     return truncated 
 }
 
