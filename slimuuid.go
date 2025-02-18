@@ -4,9 +4,10 @@ import (
 	"errors"
 	"strconv"
     "time"
+    "sync/atomic"
 )
 
-var counter int = 0
+var counter uint64 = 0
 
 /* Generates a  slimuuid of 8(time chars)+ 12 (hash chars)  with non existent collison probability , so if you are using
     this with more than 100 ids per nano second this is the recommended function to use . 
@@ -351,30 +352,25 @@ func GenerateWithCharactersAndDateAndSeed(characters string, date string, seed u
   and then you can use it like => 
   fmt.Println(slimId)
 */
-func GenerateBest(unique string)string {
-    // takes a time response clock synced upto nanoseconds encoded in 64 base character encoding
-    timePart := NanoTime()
-
+func GenerateBest(unique string) string {
     /*
      takes a hash of the unique string provided by you + counter of thread in a Nanosecond 
      so almost non existent collision probability + time part encoded in 64 base character encoding 
      using murmur3 hash function
     */
+    // Atomically increment and get counter
+    curr := atomic.AddUint64(&counter, 1)
+    
+    // Generate hasher string
     hasher := ""
-    curr := counter
-    for {
-        if curr == 0 {
-            break
-        }
-        hasher += string(characters[curr%64])
+    for curr > 0 {
+        hasher = string(characters[curr%64]) + hasher
         curr = curr / 64
     }
 
-	hashedPart :=  SingleHashGenerator(unique+hasher+timePart)
-
-
-    // increment the counter
-	return timePart + hashedPart 
+    timePart := NanoTime()
+    hashedPart := SingleHashGenerator(unique + hasher + timePart)
+    return timePart + hashedPart
 }
 
 
