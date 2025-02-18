@@ -364,8 +364,8 @@ func GenerateBest(unique string) string {
     // Generate hasher string
     hasher := ""
     for curr > 0 {
-        hasher = string(characters[curr%64]) + hasher
-        curr = curr / 64
+        hasher = string(characters[curr%63]) + hasher
+        curr = curr / 63
     }
 
     timePart := NanoTime()
