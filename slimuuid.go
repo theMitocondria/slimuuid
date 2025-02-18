@@ -360,12 +360,18 @@ func GenerateBest(unique string)string {
      so almost non existent collision probability + time part encoded in 64 base character encoding 
      using murmur3 hash function
     */
-	hashedPart :=  SingleHashGenerator(unique+string(characters[counter])+timePart)
-
-    // if counter is greater than 64 then reset it to 0
-    if counter >= 64 {
-        counter = 0
+    hasher := ""
+    curr := counter
+    for {
+        if curr == 0 {
+            break
+        }
+        hasher += string(characters[curr%64])
+        curr = curr / 64
     }
+
+	hashedPart :=  SingleHashGenerator(unique+hasher+timePart)
+
 
     // increment the counter
 	return timePart + hashedPart 
