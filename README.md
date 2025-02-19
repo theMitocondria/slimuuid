@@ -27,7 +27,7 @@ But these unique identifiers must have some properties that are needed for diffe
 So while keeping in mind all of these , We shall learn how we made slimUUID , how you can use it .
 
 **Unpredictability** : As you can also use integers for Unique Identifiers and you would save a lot of space but it is not good where you are sending these IDs in url to customer .
-- Solution : SlimUUID is using its last 8-10 characters for MAC Address , IP Address , Murmur3Hash Seed Hashing with each nanosecond of time . So predictability of this uuid is astronomically low . 
+- Solution : SlimUUID is using its last 8-10 characters for MAC Address , IP Address , xxHash Seed Hashing with each nanosecond of time . So predictability of this uuid is astronomically low . 
 
 
 **Collision Probability** : When generating a UUID one thing that is a must is its neglible in collision probabilty . By collision probabilty I mean the probability of same id being generated after how many generation and at what percentage of repeatition .
@@ -49,11 +49,11 @@ SlimUUID  is made of total 18 characters (for Best and Fast Methods) : xxxxxxxxx
 
 In these 18 chracters first 10 stands for timestamp till nanoseconds from a date that you can specify , but the time is not in integers rather , **Base-64 Encoding** . This Encoding is done using simple maths algorithms , which could be understood in time.go file .
 
-Last 8 characters involves **MurMur3 hash** made from various parts which are listed : 
+Last 8 characters involves **xxHash** made from various parts which are listed : 
 1. Mac Address / Can be IP address according to customization
 2. Global Counter 
 3. TimeSeed 
-4. MurMur3 Sum32 hash
+4. xxHash Sum64
 5. TimeStamp from previous stage
 Its arrangement can be seen in slimuuid.go file's different methods .
 
@@ -70,7 +70,7 @@ Its arrangement can be seen in slimuuid.go file's different methods .
 5. **Minute** (1 char, up to 60 possible values).  
 6. **Millisecond** (2 chars, derived from current second + millisecond).  
 7. **Nanosecond** (2 chars, derived from current millisecond + nanosecond).  
-8. **Murmur3 Hash** (8-12 chars depending upon methods being used).
+8. **xxHash** (8-12 chars depending upon methods being used).
 
 
 ## Installation

@@ -2,47 +2,13 @@ package slimuuid
 
 import (
 	"encoding/binary"
-	"encoding/hex"
-	"github.com/spaolacci/murmur3"
+    "github.com/cespare/xxhash"
+    "sync/atomic"
+    "strconv"
+    "encoding/base64"
 )
 
-/*
-    This function utilizes murmur3 hash function to generate a 128 bit hash of the input string
-    this takes two hashes and combines them to generate a 128 bit hash , and it takes input a
-     uinque string to generate a hash , always call the function like => 
-     uuid := "your_unique_string"
-     hash := DoubleHashGenerator(uuid)
-     fmt.Println(hash)
-    This return 12 characters which is 64 base character encoding
-*/
-func DoubleHashGenerator(uuid string) string {
-    hash1, hash2 := murmur3.Sum128([]byte(uuid))
-    var fullHash [16]byte 
-    binary.BigEndian.PutUint64(fullHash[:8], hash1)
-    binary.BigEndian.PutUint64(fullHash[8:], hash2)
-    truncated := hex.EncodeToString(fullHash[:6])
-    return truncated 
-}
-
-/*
-    This function utilizes murmur3 hash function to generate a 128 bit hash of the input string
-    this takes two hashes and combines them to generate a 128 bit hash . It is same as 
-    DoubleHashGenerator but with a seed , always call the function like => 
-    uuid := "your_unique_string"
-    seed := uint32(time.Now().UnixNano())
-    hash := DoubleHashGeneratorWithSeed(uuid, seed)
-    fmt.Println(hash)
-    This return 12 characters which is 64 base character encoding
-*/
-func DoubleHashGeneratorWithSeed(uuid string, seed uint32) string {
-    hash1, hash2 := murmur3.Sum128WithSeed([]byte(uuid), seed)
-    var fullHash [16]byte // stack-allocated for efficiency
-    binary.BigEndian.PutUint64(fullHash[:8], hash1)
-    binary.BigEndian.PutUint64(fullHash[8:], hash2)
-    truncated := hex.EncodeToString(fullHash[:6])
-    return truncated 
-}
-
+var counter uint64 = 0  // atomic counter range of counter 0->2^64(0-18446744073709551615)
 /*
     This function utilizes murmur3 hash function to generate a 32 bit hash of the input string
     always call the function like => 
@@ -53,24 +19,14 @@ func DoubleHashGeneratorWithSeed(uuid string, seed uint32) string {
     different algos , additional strings to avoid collision .
 */
 func SingleHashGenerator(tt string) string {
-    hash1 := murmur3.Sum64([]byte(tt))  // 64-bit instead of 32-bit
-    var fullHash [8]byte // stack-allocated for efficiency
-    binary.BigEndian.PutUint64(fullHash[:8], hash1)
-    truncated := hex.EncodeToString(fullHash[:4])
-    return truncated 
+    // Combine input with counter atomically
+    counter := atomic.AddUint64(&counter, 1)
+    data := append([]byte(tt), []byte(strconv.FormatUint(counter, 10))...)    
+    // Generate 64-bit hash
+    hash := xxhash.Sum64(data)
+    // Convert directly to base64
+    bytes := make([]byte, 8)
+    binary.LittleEndian.PutUint64(bytes, hash)
+    return base64.RawURLEncoding.EncodeToString(bytes)[:8]
 }
 
-/*
-    Same as SingleHashGenerator but with a seed , always call the function like => 
-    uuid := "your_unique_string"
-    seed := uint32(time.Now().UnixNano())
-    hash := SingleHashGeneratorWithSeed(uuid, seed)
-    fmt.Println(hash)
-*/
-func SingleHashGeneratorWithSeed(tt string, seed uint32) string {
-    hash1 := murmur3.Sum32WithSeed([]byte(tt),seed)
-    var fullHash [4]byte // stack-allocated for efficiency
-    binary.BigEndian.PutUint32(fullHash[0:], hash1)
-    truncated := hex.EncodeToString(fullHash[0:])
-    return truncated 
-}
