@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 	"github.com/google/uuid"
+	"github.com/matoous/go-nanoid/v2"
 )
 
 const testMacID = "c4:75:ab:cf:66:bf"
@@ -14,15 +15,63 @@ const testSeed = uint32(12345)
 const testCharacters = "0123456789abcdefghijklmnopqrstuvwxyz_-ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // Benchmarks
-func BenchmarkUUID(b *testing.B) {
+func BenchmarkGenerateBest(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ ,_= uuid.NewV7()
+		_,_ = GenerateBest(testMacID)
 	}
 }
 
-func BenchmarkGenerateBest(b *testing.B) {
+func BenchmarkUUID(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = GenerateBest(testMacID)
+		_,_= uuid.NewV7()
+	}
+}
+
+func BenchmarkNanoid(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_,_= gonanoid.New()
+	}
+}
+
+func BenchmarkGenerate(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_,_= Generate()
+	}
+}
+
+func BenchmarkGenerateWithDate(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_,_= GenerateWithDate(testDate)
+	}
+}
+
+func BenchmarkGenerateWithCharacters(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_,_= GenerateWithCharacters(testCharacters)
+	}
+}
+
+func BenchmarkGenerateWithCharactersAndDate(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_,_= GenerateWithCharactersAndDate(testCharacters, testDate)
+	}
+}
+
+func BenchmarkGenerateBestWithDate(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_,_= GenerateBestWithDate(testMacID, testDate)
+	}
+}
+
+func BenchmarkGenerateBestWithCharacters(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_,_= GenerateBestWithCharacters(testMacID, testCharacters)
+	}
+}
+
+func BenchmarkGenerateBestWithCharactersAndDate(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_,_= GenerateBestWithCharactersAndDate(testMacID, testCharacters, testDate)
 	}
 }
 
@@ -52,8 +101,8 @@ func TestParallelCollisionProbability(t *testing.T) {
 			
 			// Generate IDs
 			for i := 0; i < idsPerRoutine; i++ {
-				id1 := GenerateBest(fmt.Sprintf("test1_%d_%d", routineNum, i))
-				id2 := GenerateBest(fmt.Sprintf("test2_%d_%d", routineNum, i))
+				id1,_ := GenerateBest(fmt.Sprintf("test1_%s_%d", testMacID, i))
+				id2,_ := GenerateBest(fmt.Sprintf("test2_%s_%d", testMacID, i))
 				localIds = append(localIds, id1, id2)
 			}
 
@@ -82,33 +131,6 @@ func TestParallelCollisionProbability(t *testing.T) {
 	t.Logf("IDs per second: %.2f", idsPerSecond)
 	t.Logf("Conflicts detected: %d", conflicts)
 	t.Logf("Unique ratio: %.4f%%", 100*(1-float64(conflicts)/float64(totalIDs)))
-}
-
-// Keep the original sequential test for comparison
-func TestSequentialCollisionProbability(t *testing.T) {
-	seen := make(map[string]bool)
-	iterations := 1000000
-	
-	startTime := time.Now()
-	
-	for i := 0; i < iterations; i++ {
-		id1 := GenerateBest("test1")
-		id2 := GenerateBest("test2")
-		
-		if seen[id1] || seen[id2] {
-			t.Errorf("Collision detected at iteration %d", i)
-		}
-		seen[id1] = true
-		seen[id2] = true
-	}
-
-	duration := time.Since(startTime)
-	totalIDs := iterations * 2
-	idsPerSecond := float64(totalIDs) / duration.Seconds()
-
-	t.Logf("Sequential test completed in %v", duration)
-	t.Logf("Total IDs generated: %d", totalIDs)
-	t.Logf("IDs per second: %.2f", idsPerSecond)
 }
 
 
