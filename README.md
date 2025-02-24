@@ -27,12 +27,12 @@ But these unique identifiers must have some properties that are needed for diffe
 So while keeping in mind all of these , We shall learn how we made slimUUID , how you can use it .
 
 **Unpredictability** : As you can also use integers for Unique Identifiers and you would save a lot of space but it is not good where you are sending these IDs in url to customer .
-- Solution : SlimUUID is using its last 8-10 characters for MAC Address , IP Address , xxHash Seed Hashing with each nanosecond of time . So predictability of this uuid is astronomically low . 
+- Solution : SlimUUID is using its last 8-10 characters for MAC Address , IP Address , xxHash Hashing with each nanosecond of time . So predictability of this uuid is astronomically low . 
 
 
 **Collision Probability** : When generating a UUID one thing that is a must is its neglible in collision probabilty . By collision probabilty I mean the probability of same id being generated after how many generation and at what percentage of repeatition .
-- Solution : SlimUUID uses precision till NanoSeconds , For reference a general Rand.Intn() function take 1ms which is 1000 nanoseconds . So while using nanoseconds , we keep in mind the collison which can occur when multiple systems are involved or same systems threads are used , which btw is next to impossible considering current hardware contraints because even switching context take more than 10ns . So we assign each ID a unique Address , kindoff Global Thread counter . So getting hit by astroid is much more probable then getting hit by slimUUID collison . 
-So for proof we got it calculated , [For Exact reference Go to this Blog](https://dev.to/mitocondria/slimuuid-the-compact-memory-efficient-alternative-to-standard-uuids-2dak)
+- Solution : SlimUUID uses precision till NanoSeconds . So while using nanoseconds , we keep in mind the collison which can occur when multiple systems are involved or same systems threads are used , which btw is next to impossible considering current hardware contraints because even switching context take more than 10ns . So we assign each ID a unique Address that is machine's address producing it  , Global Thread counter with atomic updation . So getting hit by astroid is much more probable then getting hit by slimUUID collison . 
+So for proof we got it calculated , [For Exact reference ](https://x.com/i/grok/share/Zz0YPXadvu9CZxbvh4lXwk0UT)
 
 
 **Space and Time Complexity** : So Each uuid takes some time to be generated , needs a space to be stored , needs space to be indexed , hashed . So for a nice industry level uuid it is a must to be Memory Efficient , Should be lightning fast generated .
@@ -67,10 +67,11 @@ Its arrangement can be seen in slimuuid.go file's different methods .
 2. **Month** (1 char, up to 12 possible values).  
 3. **Day** (1 char, up to 31 possible values).  
 4. **Hour** (1 char, up to 24 possible values).  
-5. **Minute** (1 char, up to 60 possible values).  
-6. **Millisecond** (2 chars, derived from current second + millisecond).  
-7. **Nanosecond** (2 chars, derived from current millisecond + nanosecond).  
-8. **xxHash** (8-12 chars depending upon methods being used).
+5. **Minute** (1 char, up to 60 possible values).
+6. **Second** (1 char up to 60 possible values )
+7. **Millisecond** (2 chars, derived from current second + millisecond).  
+8. **Nanosecond** (2 chars, derived from current millisecond + nanosecond).  
+9. **xxHash** (8 chars depending upon methods being used).
 
 
 ## Installation
