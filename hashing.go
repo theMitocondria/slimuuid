@@ -10,7 +10,7 @@ import (
 
 var counter uint64 = 0  // atomic counter range of counter 0->2^64(0-18446744073709551615)
 /*
-    This function utilizes murmur3 hash function to generate a 32 bit hash of the input string
+    This function utilizes xxhash hash function to generate a 64 bit hash of the input string
     always call the function like => 
     uuid := "your_unique_string"
     hash := SingleHashGenerator(uuid)
