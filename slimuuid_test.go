@@ -5,8 +5,6 @@ import (
 	"sync"
 	"testing"
 	"time"
-	"github.com/google/uuid"
-	"github.com/matoous/go-nanoid/v2"
 )
 
 const testMacID = "c4:75:ab:cf:66:bf"
@@ -20,49 +18,11 @@ func BenchmarkGenerateBest(b *testing.B) {
 		_,_ = GenerateBest(testMacID)
 	}
 }
-
-func BenchmarkUUID(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_,_= uuid.NewV7()
-	}
-}
-
-func BenchmarkNanoid(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_,_= gonanoid.New()
-	}
-}
-
-func BenchmarkGenerate(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_,_= Generate()
-	}
-}
-
-func BenchmarkGenerateWithDate(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_,_= GenerateWithDate(testDate)
-	}
-}
-
-func BenchmarkGenerateWithCharacters(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_,_= GenerateWithCharacters(testCharacters)
-	}
-}
-
-func BenchmarkGenerateWithCharactersAndDate(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_,_= GenerateWithCharactersAndDate(testCharacters, testDate)
-	}
-}
-
 func BenchmarkGenerateBestWithDate(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_,_= GenerateBestWithDate(testMacID, testDate)
 	}
 }
-
 func BenchmarkGenerateBestWithCharacters(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_,_= GenerateBestWithCharacters(testMacID, testCharacters)
