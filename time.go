@@ -17,7 +17,7 @@ func NanoTime() string {
         years--
         months += 12
     }
-    days := int(duration.Hours() / 24)
+    days := int(duration.Hours() / 24) % 30
     hours := int(duration.Hours()) % 24
     minutes := int(duration.Minutes()) % 60
 	seconds := int(duration.Seconds()) % 60
